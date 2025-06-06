@@ -1,21 +1,21 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
 
-out vec3 FragPos;
-out vec3 Normal;
-out vec2 TexCoords;
+attribute vec3 position;
+attribute vec2 texture_coord;
+attribute vec3 normals;
 
+
+varying vec2 out_texture;
+varying vec3 out_fragPos; //posicao do fragmento (i.e., posicao na superficie onde a iluminacao sera calculada)
+varying vec3 out_normal;
+		
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 projection;        
 
-void main()
-{
-    FragPos = vec3(model * vec4(aPos, 1.0));
-    Normal = mat3(transpose(inverse(model))) * aNormal;  
-    TexCoords = aTexCoords;
-    
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+void main(){
+	gl_Position = projection * view * model * vec4(position,1.0);
+	out_texture = vec2(texture_coord);
+	out_fragPos = vec3(  model * vec4(position, 1.0));
+	out_normal = vec3( model *vec4(normals, 1.0));            
 }
