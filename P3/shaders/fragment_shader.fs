@@ -6,6 +6,11 @@ uniform vec3 lightPosTV;
        
 uniform vec3 viewPos;
 uniform float ka, kd, ks, ns;
+
+uniform float diffuse_dimmer;
+uniform float specular_dimmer;
+uniform float ambient_dimmer;
+
 uniform sampler2D samplerTexture;
 
 uniform vec3 houseMin;
@@ -33,7 +38,7 @@ bool isInsideBox(vec3 point, vec3 boxMin, vec3 boxMax) {
 }
 
 void main() {
-    vec3 ambient = ka * vec3(0.7);
+    vec3 ambient = ka * vec3(1.0) * ambient_dimmer;
     vec3 result = ambient;
 
     vec3 norm = normalize(out_normal);
@@ -56,7 +61,7 @@ void main() {
         float spec1 = pow(max(dot(viewDir, reflectDir1), 0.0), ns);
         vec3 specular1 = ks * spec1 * lightColor1 * attenuation1 * intensity;
 
-        result += diffuse1 + specular1;
+        result += (diffuse1*diffuse_dimmer) + (specular1*specular_dimmer);
     }
 
     // --- Luz 2 ---
@@ -72,7 +77,7 @@ void main() {
         float spec2 = pow(max(dot(viewDir, reflectDir2), 0.0), ns);
         vec3 specular2 = ks * spec2 * lightColor2 * attenuation2 * intensity;
 
-        result += diffuse2 + specular2;
+        result += (diffuse2*diffuse_dimmer) + (specular2*specular_dimmer);
     }
 
     // --- Luz da TV ---
@@ -88,7 +93,7 @@ void main() {
         float specTV = pow(max(dot(viewDir, reflectDirTV), 0.0), ns);
         vec3 specularTV = ks * specTV * lightColorTV * attenuationTV * (intensity * 0.8);
 
-        result += diffuseTV + specularTV;
+        result += (diffuseTV*diffuse_dimmer) + (specularTV*specular_dimmer);
     }
     result = clamp(result, 0.0, 1.0);
     gl_FragColor = vec4(result, 1.0) * texture2D(samplerTexture, out_texture);
