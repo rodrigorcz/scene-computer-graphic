@@ -6,10 +6,19 @@ uniform vec3 lightPosTV;
        
 uniform vec3 viewPos;
 uniform float ka, kd, ks, ns;
+
+uniform float diffuse_dimmer;
+uniform float specular_dimmer;
+uniform float ambient_dimmer;
+
 uniform sampler2D samplerTexture;
 
 uniform vec3 houseMin;
 uniform vec3 houseMax;
+
+uniform bool isMenLight;
+uniform bool isTVLight;
+uniform bool isLanternLight;
 
 uniform bool isLight1Internal;
 uniform bool isLight2Internal;
@@ -29,7 +38,7 @@ bool isInsideBox(vec3 point, vec3 boxMin, vec3 boxMax) {
 }
 
 void main() {
-    vec3 ambient = ka * vec3(0.7);
+    vec3 ambient = ka * vec3(1.0) * ambient_dimmer;
     vec3 result = ambient;
 
     vec3 norm = normalize(out_normal);
@@ -40,7 +49,7 @@ void main() {
     bool light2_outside  = any(lessThan(lightPos2, houseMin)) || any(greaterThan(lightPos2, houseMax));
 
     // --- Luz 1 ---
-    if (!(is_inside_house && light1_outside)) {
+    if (!(is_inside_house && light1_outside) && isMenLight) {
         vec3 lightDir1 = normalize(lightPos1 - out_fragPos);
         float distance1 = length(lightPos1 - out_fragPos);
         float attenuation1 = 1.0 / (distance1 * distance1); 
@@ -52,11 +61,11 @@ void main() {
         float spec1 = pow(max(dot(viewDir, reflectDir1), 0.0), ns);
         vec3 specular1 = ks * spec1 * lightColor1 * attenuation1 * intensity;
 
-        result += diffuse1 + specular1;
+        result += (diffuse1*diffuse_dimmer) + (specular1*specular_dimmer);
     }
 
     // --- Luz 2 ---
-    if (!(is_inside_house && light2_outside)) {
+    if (!(is_inside_house && light2_outside) && isLanternLight) {
         vec3 lightDir2 = normalize(lightPos2 - out_fragPos);
         float distance2 = length(lightPos2 - out_fragPos);
         float attenuation2 = 1.0 / (distance2 * distance2); 
@@ -68,24 +77,24 @@ void main() {
         float spec2 = pow(max(dot(viewDir, reflectDir2), 0.0), ns);
         vec3 specular2 = ks * spec2 * lightColor2 * attenuation2 * intensity;
 
-        result += diffuse2 + specular2;
+        result += (diffuse2*diffuse_dimmer) + (specular2*specular_dimmer);
     }
 
     // --- Luz da TV ---
-    if (!(is_inside_house && light2_outside)) {
+    if (!(is_inside_house && light2_outside) && isTVLight) {
         vec3 lightDirTV = normalize(lightPosTV - out_fragPos);
         float distanceTV = length(lightPosTV - out_fragPos);
         float attenuationTV = 1.0 / (distanceTV * distanceTV); 
 
         float diffTV = max(dot(norm, lightDirTV), 0.0);
-        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * (intensity * 0.8); // intensidade mais suave
+        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * (intensity * 0.8);
 
         vec3 reflectDirTV = reflect(-lightDirTV, norm);
         float specTV = pow(max(dot(viewDir, reflectDirTV), 0.0), ns);
         vec3 specularTV = ks * specTV * lightColorTV * attenuationTV * (intensity * 0.8);
 
-        result += diffuseTV + specularTV;
+        result += (diffuseTV*diffuse_dimmer) + (specularTV*specular_dimmer);
     }
-
+    result = clamp(result, 0.0, 1.0);
     gl_FragColor = vec4(result, 1.0) * texture2D(samplerTexture, out_texture);
 }
