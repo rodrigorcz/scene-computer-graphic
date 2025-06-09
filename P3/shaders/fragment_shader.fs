@@ -11,6 +11,10 @@ uniform sampler2D samplerTexture;
 uniform vec3 houseMin;
 uniform vec3 houseMax;
 
+uniform bool isMenLight;
+uniform bool isTVLight;
+uniform bool isLanternLight;
+
 uniform bool isLight1Internal;
 uniform bool isLight2Internal;
 
@@ -40,7 +44,7 @@ void main() {
     bool light2_outside  = any(lessThan(lightPos2, houseMin)) || any(greaterThan(lightPos2, houseMax));
 
     // --- Luz 1 ---
-    if (!(is_inside_house && light1_outside)) {
+    if (!(is_inside_house && light1_outside) && isMenLight) {
         vec3 lightDir1 = normalize(lightPos1 - out_fragPos);
         float distance1 = length(lightPos1 - out_fragPos);
         float attenuation1 = 1.0 / (distance1 * distance1); 
@@ -56,7 +60,7 @@ void main() {
     }
 
     // --- Luz 2 ---
-    if (!(is_inside_house && light2_outside)) {
+    if (!(is_inside_house && light2_outside) && isLanternLight) {
         vec3 lightDir2 = normalize(lightPos2 - out_fragPos);
         float distance2 = length(lightPos2 - out_fragPos);
         float attenuation2 = 1.0 / (distance2 * distance2); 
@@ -72,7 +76,7 @@ void main() {
     }
 
     // --- Luz da TV ---
-    if (!(is_inside_house && light2_outside)) {
+    if (!(is_inside_house && light2_outside) && isTVLight) {
         vec3 lightDirTV = normalize(lightPosTV - out_fragPos);
         float distanceTV = length(lightPosTV - out_fragPos);
         float attenuationTV = 1.0 / (distanceTV * distanceTV); 
