@@ -47,6 +47,7 @@ void main() {
     bool is_inside_house = isInsideBox(out_fragPos, houseMin, houseMax);
     bool light1_outside  = any(lessThan(lightPos1, houseMin)) || any(greaterThan(lightPos1, houseMax));
     bool light2_outside  = any(lessThan(lightPos2, houseMin)) || any(greaterThan(lightPos2, houseMax));
+	bool lightTV_outside  = any(lessThan(lightPosTV, houseMin)) || any(greaterThan(lightPosTV, houseMax));
 
     // --- Luz 1 ---
     if (!(is_inside_house && light1_outside) && isMenLight) {
@@ -81,17 +82,17 @@ void main() {
     }
 
     // --- Luz da TV ---
-    if (!(is_inside_house && light2_outside) && isTVLight) {
+    if (!(is_inside_house && lightTV_outside) && isTVLight) {
         vec3 lightDirTV = normalize(lightPosTV - out_fragPos);
         float distanceTV = length(lightPosTV - out_fragPos);
         float attenuationTV = 1.0 / (distanceTV * distanceTV); 
 
         float diffTV = max(dot(norm, lightDirTV), 0.0);
-        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * (intensity * 0.8);
+        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * intensity;
 
         vec3 reflectDirTV = reflect(-lightDirTV, norm);
         float specTV = pow(max(dot(viewDir, reflectDirTV), 0.0), ns);
-        vec3 specularTV = ks * specTV * lightColorTV * attenuationTV * (intensity * 0.8);
+        vec3 specularTV = ks * specTV * lightColorTV * attenuationTV * intensity ;
 
         result += (diffuseTV*diffuse_dimmer) + (specularTV*specular_dimmer);
     }
