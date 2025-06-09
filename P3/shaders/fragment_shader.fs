@@ -78,7 +78,7 @@ void main() {
         float attenuationTV = 1.0 / (distanceTV * distanceTV); 
 
         float diffTV = max(dot(norm, lightDirTV), 0.0);
-        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * (intensity * 0.8); // intensidade mais suave
+        vec3 diffuseTV = kd * diffTV * lightColorTV * attenuationTV * (intensity * 0.8);
 
         vec3 reflectDirTV = reflect(-lightDirTV, norm);
         float specTV = pow(max(dot(viewDir, reflectDirTV), 0.0), ns);
@@ -86,6 +86,6 @@ void main() {
 
         result += diffuseTV + specularTV;
     }
-
+    result = clamp(result, 0.0, 1.0);
     gl_FragColor = vec4(result, 1.0) * texture2D(samplerTexture, out_texture);
 }
